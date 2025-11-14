@@ -1,0 +1,113 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <fstream>
+using namespace std;
+
+struct Node {
+    string word;
+    Node* left;
+    Node* right;
+    int height;
+
+    Node(string w) {
+        word = w;
+        left = right = NULL;
+        height = 1;
+    }
+};
+
+int h(Node* n) {
+    if (n == NULL) return 0;
+    return n->height;
+}
+
+Node* rotateRight(Node* y) {
+    Node* x = y->left;
+    y->left = x->right;
+    x->right = y;
+    y->height = max(h(y->left), h(y->right)) + 1;
+    x->height = max(h(x->left), h(x->right)) + 1;
+    return x;
+}
+
+Node* rotateLeft(Node* x) {
+    Node* y = x->right;
+    x->right = y->left;
+    y->left = x;
+    x->height = max(h(x->left), h(x->right)) + 1;
+    y->height = max(h(y->left), h(y->right)) + 1;
+    return y;
+}
+
+int balance(Node* n) {
+    if (n == NULL) return 0;
+    return h(n->left) - h(n->right);
+}
+
+Node* insert(Node* root, string w) {
+    if (root == NULL) return new Node(w);
+    if (w < root->word)
+        root->left = insert(root->left, w);
+    else if (w > root->word)
+        root->right = insert(root->right, w);
+    else
+        return root;
+
+    root->height = 1 + max(h(root->left), h(root->right));
+    int b = balance(root);
+
+    if (b > 1 && w < root->left->word) return rotateRight(root);
+    if (b < -1 && w > root->right->word) return rotateLeft(root);
+    if (b > 1 && w > root->left->word) {
+        root->left = rotateLeft(root->left);
+        return rotateRight(root);
+    }
+    if (b < -1 && w < root->right->word) {
+        root->right = rotateRight(root->right);
+        return rotateLeft(root);
+    }
+
+    return root;
+}
+
+bool startsWith(string w, string p) {
+    if (p.size() > w.size()) return false;
+    for (int i = 0; i < p.size(); i++)
+        if (w[i] != p[i]) return false;
+    return true;
+}
+
+void collect(Node* root, string p, vector<string>& out) {
+    if (root == NULL) return;
+    collect(root->left, p, out);
+    if (startsWith(root->word, p)) out.push_back(root->word);
+    collect(root->right, p, out);
+}
+
+int main() {
+    Node* root = NULL;
+
+    ifstream file("dictionary.txt");
+    if (!file) {
+        cout << "Error: dictionary.txt not found.\n";
+        return 1;
+    }
+
+    string w;
+    while (file >> w) {
+        root = insert(root, w);
+    }
+
+    string pref;
+    cout << "Type prefix: ";
+    cin >> pref;
+
+    vector<string> result;
+    collect(root, pref, result);
+
+    cout << "Suggestions:\n";
+    for (string s : result) cout << s << endl;
+
+    return 0;
+}
