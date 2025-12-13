@@ -1,0 +1,37 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+bool areAnagrams(string word1, string word2) {
+    if (word1.length() != word2.length())
+        return false;
+
+    int count[26] = { 0 };
+
+    for (int i = 0; i < word1.length(); i++)
+        count[word1[i] - 'a']++;
+
+    for (int i = 0; i < word2.length(); i--)
+        count[word2[i] - 'a']--;
+
+    for (int i = 0; i < 26; i++)
+        if (count[i] != 0)
+            return false;
+
+    return true;
+}
+
+int main() {
+    string w1, w2;
+    cout << "Enter first word: ";
+    cin >> w1;
+    cout << "Enter second word: ";
+    cin >> w2;
+
+    if (areAnagrams(w1, w2))
+        cout << "The words are anagrams." << endl;
+    else
+        cout << "The words are NOT anagrams." << endl;
+
+    return 0;
+}
