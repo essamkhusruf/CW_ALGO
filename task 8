@@ -1,0 +1,79 @@
+#include <iostream>
+#include <vector>
+#include <set>
+using namespace std;
+
+int n, cap;
+using State = vector<vector<int>>;
+
+bool goal(State s) {
+    for (auto& st : s) {
+        if (st.empty()) continue;
+        for (int x : st)
+            if (x != st[0]) return false;
+    }
+    return true;
+}
+
+bool valid(State s, int a, int b) {
+    if (a == b) return false;
+    if (s[a].empty()) return false;
+    if (s[b].size() == cap) return false;
+    if (s[b].empty()) return true;
+    return s[a].back() == s[b].back();
+}
+
+State move(State s, int a, int b) {
+    int x = s[a].back();
+    s[a].pop_back();
+    s[b].push_back(x);
+    return s;
+}
+
+bool dfs(State s, set<State>& vis, vector<pair<int, int>>& path) {
+    if (goal(s)) return true;
+    vis.insert(s);
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (valid(s, i, j)) {
+                State ns = move(s, i, j);
+                if (!vis.count(ns)) {
+                    path.push_back({ i, j });
+                    if (dfs(ns, vis, path)) return true;
+                    path.pop_back();
+                }
+            }
+        }
+    }
+    return false;
+}
+
+int main() {
+    cout << "Enter number of stacks: ";
+    cin >> n;
+
+    cout << "Enter stack capacity: ";
+    cin >> cap;
+
+    State start(n);
+
+    for (int i = 0; i < n; i++) {
+        cout << "Enter balls in stack " << i << " (top to bottom, -1 to stop): ";
+        int x;
+        while (cin >> x && x != -1)
+            start[i].push_back(x);
+    }
+
+    set<State> vis;
+    vector<pair<int, int>> path;
+
+    if (dfs(start, vis, path)) {
+        cout << "\nMoves:\n";
+        for (auto p : path)
+            cout << "Move from stack " << p.first << " to stack " << p.second << endl;
+    }
+    else {
+        cout << "No solution\n";
+    }
+}
