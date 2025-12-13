@@ -1,0 +1,114 @@
+#include <iostream>
+#include <iomanip>
+#include <ctime>
+#include <cstdlib>
+#include <chrono>
+using namespace std;
+using namespace std::chrono;
+
+int bubble_sort_count(int arr[], int n) {
+    int count = 0;
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            count++;
+            if (arr[j] > arr[j + 1])
+                swap(arr[j], arr[j + 1]);
+        }
+    }
+    return count;
+}
+
+int selection_sort_count(int arr[], int n) {
+    int count = 0;
+    for (int i = 0; i < n - 1; i++) {
+        int minIndex = i;
+        for (int j = i + 1; j < n; j++) {
+            count++;
+            if (arr[j] < arr[minIndex])
+                minIndex = j;
+        }
+        swap(arr[i], arr[minIndex]);
+    }
+    return count;
+}
+
+int insertion_sort_count(int arr[], int n) {
+    int count = 0;
+    for (int i = 1; i < n; i++) {
+        int key = arr[i];
+        int j = i - 1;
+        while (j >= 0 && arr[j] > key) {
+            count++;
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        if (j >= 0) count++;
+        arr[j + 1] = key;
+    }
+    return count;
+}
+
+void fill_random(int arr[], int n) {
+    for (int i = 0; i < n; i++)
+        arr[i] = rand() % 1000;
+}
+
+void fill_sorted(int arr[], int n) {
+    for (int i = 0; i < n; i++)
+        arr[i] = i;
+}
+
+void fill_reverse(int arr[], int n) {
+    for (int i = 0; i < n; i++)
+        arr[i] = n - i;
+}
+
+void test_comparisons() {
+    srand(time(0));
+
+    cout << "n,Type,"
+         << "Bubble_Comp,Bubble_Time,"
+         << "Selection_Comp,Selection_Time,"
+         << "Insertion_Comp,Insertion_Time\n";
+
+    for (int n = 1; n <= 30; n++) {
+        int original[100], arr[100];
+        string types[3] = { "Random", "Sorted", "Reverse" };
+
+        for (int t = 0; t < 3; t++) {
+
+            if (types[t] == "Random") fill_random(original, n);
+            else if (types[t] == "Sorted") fill_sorted(original, n);
+            else fill_reverse(original, n);
+
+            for (int i = 0; i < n; i++) arr[i] = original[i];
+            auto start = high_resolution_clock::now();
+            int bc = bubble_sort_count(arr, n);
+            auto end = high_resolution_clock::now();
+            double bt = duration<double>(end - start).count();
+
+            for (int i = 0; i < n; i++) arr[i] = original[i];
+            start = high_resolution_clock::now();
+            int sc = selection_sort_count(arr, n);
+            end = high_resolution_clock::now();
+            double st = duration<double>(end - start).count();
+
+            for (int i = 0; i < n; i++) arr[i] = original[i];
+            start = high_resolution_clock::now();
+            int ic = insertion_sort_count(arr, n);
+            end = high_resolution_clock::now();
+            double it = duration<double>(end - start).count();
+
+            cout << n << ","
+                 << types[t] << ","
+                 << bc << "," << bt << ","
+                 << sc << "," << st << ","
+                 << ic << "," << it << "\n";
+        }
+    }
+}
+
+int main() {
+    test_comparisons();
+    return 0;
+}
