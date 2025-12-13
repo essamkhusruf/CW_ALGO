@@ -1,0 +1,51 @@
+#include <iostream>
+using namespace std;
+
+int main() {
+    const int MAX = 100;  
+    string names[MAX];
+    double prices[MAX];
+    int count = 0;
+
+    double budget;
+    cout << "Enter your budget: ";
+    cin >> budget;
+
+    cout << "Enter items (type 'done' as name to stop)" << endl;
+
+    while (count < MAX) {
+        cout << "Item name: ";
+        cin >> names[count];
+
+        if (names[count] == "done")
+            break;
+
+        cout << "Item price: ";
+        cin >> prices[count];
+
+        count++;
+    }
+
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = 0; j < count - i - 1; j++) {
+            if (prices[j] > prices[j + 1]) {
+                swap(prices[j], prices[j + 1]);
+                swap(names[j], names[j + 1]);
+            }
+        }
+    }
+
+    double total = 0;
+    cout << "Items you should buy: " << endl;
+
+    for (int i = 0; i < count; i++) {
+        if (total + prices[i] <= budget) {
+            cout << names[i] << " (" << prices[i] << ")\n";
+            total += prices[i];
+        }
+    }
+
+    cout << "Total spent: " << total << endl;
+
+    return 0;
+}
