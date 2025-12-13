@@ -4,12 +4,12 @@
 using namespace std;
 
 int n, cap;
-using State = vector<vector<int>>;
+using State = vector<vector<string>>;
 
 bool goal(State s) {
     for (auto& st : s) {
         if (st.empty()) continue;
-        for (int x : st)
+        for (auto& x : st)
             if (x != st[0]) return false;
     }
     return true;
@@ -24,7 +24,7 @@ bool valid(State s, int a, int b) {
 }
 
 State move(State s, int a, int b) {
-    int x = s[a].back();
+    string x = s[a].back();
     s[a].pop_back();
     s[b].push_back(x);
     return s;
@@ -59,10 +59,10 @@ int main() {
     State start(n);
 
     for (int i = 0; i < n; i++) {
-        cout << "Enter balls in stack " << i << " (top to bottom, -1 to stop): ";
-        int x;
-        while (cin >> x && x != -1)
-            start[i].push_back(x);
+        cout << "Enter colors in stack " << i << " (top to bottom, end with x): ";
+        string c;
+        while (cin >> c && c != "x")
+            start[i].push_back(c);
     }
 
     set<State> vis;
@@ -70,8 +70,14 @@ int main() {
 
     if (dfs(start, vis, path)) {
         cout << "\nMoves:\n";
-        for (auto p : path)
-            cout << "Move from stack " << p.first << " to stack " << p.second << endl;
+        State cur = start;
+        for (auto p : path) {
+            string color = cur[p.first].back();
+            cur = move(cur, p.first, p.second);
+            cout << "Move " << color
+                << " from stack " << p.first
+                << " to stack " << p.second << endl;
+        }
     }
     else {
         cout << "No solution\n";
