@@ -1,21 +1,20 @@
 #include <iostream>
 #include <vector>
-#include <set>
 using namespace std;
 
-int n, cap;
 using State = vector<vector<string>>;
 
-bool goal(State s) {
-    for (auto& st : s) {
-        if (st.empty()) continue;
-        for (auto& x : st)
-            if (x != st[0]) return false;
+bool isGoal(const State& s) {
+    for (int i = 0; i < s.size(); i++) {
+        if (s[i].empty()) continue;
+        for (int j = 0; j < s[i].size(); j++) {
+            if (s[i][j] != s[i][0]) return false;
+        }
     }
     return true;
 }
 
-bool valid(State s, int a, int b) {
+bool canMove(const State& s, int a, int b, int cap) {
     if (a == b) return false;
     if (s[a].empty()) return false;
     if (s[b].size() == cap) return false;
@@ -23,24 +22,36 @@ bool valid(State s, int a, int b) {
     return s[a].back() == s[b].back();
 }
 
-State move(State s, int a, int b) {
+State makeMove(State s, int a, int b) {
     string x = s[a].back();
     s[a].pop_back();
     s[b].push_back(x);
     return s;
 }
 
-bool dfs(State s, set<State>& vis, vector<pair<int, int>>& path) {
-    if (goal(s)) return true;
-    vis.insert(s);
+bool visitedBefore(const vector<State>& visited, const State& s) {
+    for (int i = 0; i < visited.size(); i++) {
+        if (visited[i] == s) return true;
+    }
+    return false;
+}
+
+bool dfs(State s, int n, int cap,
+         vector<State>& visited,
+         vector<pair<int,int>>& path) {
+
+    if (isGoal(s)) return true;
+
+    visited.push_back(s);
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            if (valid(s, i, j)) {
-                State ns = move(s, i, j);
-                if (!vis.count(ns)) {
-                    path.push_back({ i, j });
-                    if (dfs(ns, vis, path)) return true;
+            if (canMove(s, i, j, cap)) {
+                State next = makeMove(s, i, j);
+                if (!visitedBefore(visited, next)) {
+                    path.push_back(pair<int,int>(i, j));
+                    if (dfs(next, n, cap, visited, path))
+                        return true;
                     path.pop_back();
                 }
             }
@@ -50,36 +61,38 @@ bool dfs(State s, set<State>& vis, vector<pair<int, int>>& path) {
 }
 
 int main() {
-    cout << "Enter number of stacks: ";
+    int n, cap;
+    cout << "Number of stacks: ";
     cin >> n;
-
-    cout << "Enter stack capacity: ";
+    cout << "Stack capacity: ";
     cin >> cap;
 
     State start(n);
 
     for (int i = 0; i < n; i++) {
-        cout << "Enter colors in stack " << i << " (top to bottom, end with x): ";
+        cout << "Stack " << i << " (top to bottom, x to stop): ";
         string c;
-        while (cin >> c && c != "x")
+        while (cin >> c && c != "x") {
             start[i].push_back(c);
-    }
-
-    set<State> vis;
-    vector<pair<int, int>> path;
-
-    if (dfs(start, vis, path)) {
-        cout << "\nMoves:\n";
-        State cur = start;
-        for (auto p : path) {
-            string color = cur[p.first].back();
-            cur = move(cur, p.first, p.second);
-            cout << "Move " << color
-                << " from stack " << p.first
-                << " to stack " << p.second << endl;
         }
     }
-    else {
+
+    vector<State> visited;
+    vector<pair<int,int>> path;
+
+    if (dfs(start, n, cap, visited, path)) {
+        State cur = start;
+        cout << "\nMoves:\n";
+        for (int i = 0; i < path.size(); i++) {
+            int from = path[i].first;
+            int to = path[i].second;
+            string color = cur[from].back();
+            cur = makeMove(cur, from, to);
+            cout << "Move " << color
+                 << " from " << from
+                 << " to " << to << endl;
+        }
+    } else {
         cout << "No solution\n";
     }
 }
